@@ -14,6 +14,7 @@
 // [[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
 #include <cassert>
+#include <algorithm>
 #include "ANN/ANN.h"
 
 using namespace Rcpp;
@@ -121,16 +122,21 @@ struct NearestNeighborFinder : public RcppParallel::Worker {
       LogicalVector take = ids != i;
       ids = ids[take];
       auto id_row = id_.row(i);
-      for(std::size_t j = 0; j < id_.ncol(); ++j) {
-        id_row[j] = ids[j] + 1;
-      }
+      auto r_ids = ids + 1;
+      assert(id_.ncol() == r_ids.end() - r_ids.begin());
+      std::copy(r_ids.begin(), r_ids.end(), id_row.begin());
+      // for(std::size_t j = 0; j < id_.ncol(); ++j) {
+      //   id_row[j] = ids[j] + 1;
+      // }
 
 
       NumericVector ndists = NumericVector(dists, dists+k_+1)[take];
       auto d_row = d_.row(i);
-      for(std::size_t j = 0; j < d_.ncol(); ++j) {
-        d_row[j] = sqrt(ndists[j]);
-      }
+      assert(d_.ncol() == ndists.end() - ndists.begin());
+      std::transform(ndists.begin(), ndists.end(), d_row.begin(), ::sqrt);
+      // for(std::size_t j = 0; j < d_.ncol(); ++j) {
+      //   d_row[j] = sqrt(ndists[j]);
+      // }
     }
 
     delete [] dists;
@@ -169,7 +175,7 @@ List kNN_int(NumericMatrix data, int k,
   IntegerMatrix id(nrow, k);
 
   NearestNeighborFinder worker(kdTree, dataPts, k, approx, d, id);
-  RcppParallel::parallelFor(0, nrow, worker);
+  RcppParallel::parallelFor(0, nrow, worker, 1, 2);  // FIXME
 
   // cleanup
   delete kdTree;

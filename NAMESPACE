@@ -1,5 +1,6 @@
 useDynLib("dbscan", .registration = TRUE)
 import("Rcpp")
+importFrom("RcppParallel", "RcppParallelLibs")
 importFrom("graphics", "plot", "points", "par", "segments",
   "lines", "polygon", "text", "abline")
 importFrom("grDevices", "palette", "chull", "adjustcolor")

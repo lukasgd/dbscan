@@ -57,7 +57,7 @@ enum ANNerr {ANNwarn = 0, ANNabort = 1};
 //----------------------------------------------------------------------
 
 extern int		ANNmaxPtsVisited;	// maximum number of pts visited
-extern int		ANNptsVisited;		// number of pts visited in search
+extern thread_local int		ANNptsVisited;		// number of pts visited in search
 
 //----------------------------------------------------------------------
 //	Global function declarations

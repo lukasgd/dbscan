@@ -193,7 +193,7 @@ void annError(const char *msg, ANNerr level)
 //----------------------------------------------------------------------
 
 int	ANNmaxPtsVisited = 0;	// maximum number of pts visited
-int	ANNptsVisited;			// number of pts visited in search
+thread_local int	ANNptsVisited;			// number of pts visited in search
 
 //----------------------------------------------------------------------
 //	Global function declarations

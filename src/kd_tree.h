@@ -31,6 +31,8 @@
 
 using namespace std;					// make std:: available
 
+struct kd_search_state;
+
 //----------------------------------------------------------------------
 //	Generic kd-tree node
 //
@@ -47,7 +49,7 @@ class ANNkd_node{						// generic kd-tree node (empty shell)
 public:
 	virtual ~ANNkd_node() {}					// virtual distroyer
 
-	virtual void ann_search(ANNdist) = 0;		// tree search
+	virtual void ann_search(ANNdist, kd_search_state&) = 0;		// tree search
 	virtual void ann_pri_search(ANNdist) = 0;	// priority search
 	virtual void ann_FR_search(ANNdist) = 0;	// fixed-radius search
 
@@ -110,7 +112,7 @@ public:
 	virtual void print(int level, ostream &out);// print node
 	virtual void dump(ostream &out);			// dump node
 
-	virtual void ann_search(ANNdist);			// standard search
+	virtual void ann_search(ANNdist, kd_search_state&);			// standard search
 	virtual void ann_pri_search(ANNdist);		// priority search
 	virtual void ann_FR_search(ANNdist);		// fixed-radius search
 };
@@ -176,7 +178,7 @@ public:
 	virtual void print(int level, ostream &out);// print node
 	virtual void dump(ostream &out);			// dump node
 
-	virtual void ann_search(ANNdist);			// standard search
+	virtual void ann_search(ANNdist, kd_search_state&);			// standard search
 	virtual void ann_pri_search(ANNdist);		// priority search
 	virtual void ann_FR_search(ANNdist);		// fixed-radius search
 };

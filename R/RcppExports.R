@@ -37,6 +37,10 @@ frNN_query_int <- function(data, query, eps, type, bucketSize, splitRule, approx
     .Call(`_dbscan_frNN_query_int`, data, query, eps, type, bucketSize, splitRule, approx)
 }
 
+kNN_int_serial <- function(data, k, type, bucketSize, splitRule, approx) {
+    .Call(`_dbscan_kNN_int_serial`, data, k, type, bucketSize, splitRule, approx)
+}
+
 kNN_int <- function(data, k, type, bucketSize, splitRule, approx) {
     .Call(`_dbscan_kNN_int`, data, k, type, bucketSize, splitRule, approx)
 }

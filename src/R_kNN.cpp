@@ -19,6 +19,7 @@
 
 using namespace Rcpp;
 
+// pre-existing serial implementation
 
 // returns knn + dist
 // [[Rcpp::export]]
@@ -89,6 +90,8 @@ List kNN_int_serial(NumericMatrix data, int k,
 }
 
 
+// new parallel implementation
+
 struct NearestNeighborFinder : public RcppParallel::Worker {
   
   ANNpointSet* kdTree_;
@@ -109,41 +112,35 @@ struct NearestNeighborFinder : public RcppParallel::Worker {
   void operator()(std::size_t begin, std::size_t end) {
     // Note: the search also returns the point itself (as the first hit)!
     // So we have to look for k+1 points.
-    ANNdistArray dists = new ANNdist[k_+1];
-    ANNidxArray nnIdx = new ANNidx[k_+1];
+    std::vector<ANNdist> distances (k_+1);
+    std::vector<ANNidx> nnIdx (k_+1);
 
     for (std::size_t i = begin; i != end; ++i) {
       ANNpoint queryPt = dataPts_[i];
 
-      kdTree_->annkSearch(queryPt, k_+1, nnIdx, dists, approx_);
+      kdTree_->annkSearch(queryPt, k_+1, nnIdx.data(), distances.data(), approx_);
 
-      // remove self match
-      IntegerVector ids = IntegerVector(nnIdx, nnIdx+k_+1);
-      LogicalVector take = ids != i;
-      ids = ids[take];
+      // remove self match and increment indices by 1 for R convention
+      std::vector<int> other_r_ids;
+      std::vector<double>  other_distances;
+      for (std::size_t kk = 0; kk < nnIdx.size(); ++kk) {
+        if (nnIdx[kk] != (int) i) {
+          other_r_ids.push_back(nnIdx[kk] + 1);
+          other_distances.push_back(distances[kk]);
+        }
+      }
+
       auto id_row = id_.row(i);
-      auto r_ids = ids + 1;
-      assert(id_.ncol() == r_ids.end() - r_ids.begin());
-      std::copy(r_ids.begin(), r_ids.end(), id_row.begin());
-      // for(std::size_t j = 0; j < id_.ncol(); ++j) {
-      //   id_row[j] = ids[j] + 1;
-      // }
+      assert(id_.ncol() == other_r_ids.end() - other_r_ids.begin());
+      std::copy(other_r_ids.begin(), other_r_ids.end(), id_row.begin());
 
-
-      NumericVector ndists = NumericVector(dists, dists+k_+1)[take];
       auto d_row = d_.row(i);
-      assert(d_.ncol() == ndists.end() - ndists.begin());
-      std::transform(ndists.begin(), ndists.end(), d_row.begin(), ::sqrt);
-      // for(std::size_t j = 0; j < d_.ncol(); ++j) {
-      //   d_row[j] = sqrt(ndists[j]);
-      // }
+      assert(d_.ncol() == other_distances.end() - other_distances.begin());
+      std::transform(other_distances.begin(), other_distances.end(), d_row.begin(),
+                     [](double dist){ return sqrt(dist); });
     }
-
-    delete [] dists;
-    delete [] nnIdx;
   }
 };
-
 
 // returns knn + dist
 // [[Rcpp::export]]
@@ -171,11 +168,12 @@ List kNN_int(NumericMatrix data, int k,
   }
   //Rprintf("kd-tree ready. starting DBSCAN.\n");
 
+  // Rcpp objects - do not use them directly in parallel code!
   NumericMatrix d(nrow, k);
   IntegerMatrix id(nrow, k);
 
   NearestNeighborFinder worker(kdTree, dataPts, k, approx, d, id);
-  RcppParallel::parallelFor(0, nrow, worker, 1, 2);  // FIXME
+  RcppParallel::parallelFor(0, nrow, worker);
 
   // cleanup
   delete kdTree;
@@ -190,7 +188,10 @@ List kNN_int(NumericMatrix data, int k,
   ret["k"] = k;
   ret["sort"] = true;
 
-  assert(ret["id"] == kNN_int_serial(data, k, type, bucketSize, splitRule, approx)["id"]);
+  // // Uncomment for testing
+  // auto ret_serial = kNN_int_serial(data, k, type, bucketSize, splitRule, approx);
+  // assert(ret["id"] == ret_serial["id"]);
+
   return ret;
 }
 

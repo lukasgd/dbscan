@@ -87,17 +87,17 @@ void ANNkd_tree::annkSearch(
 	}
 
 	kd_search_state state = {
-		.ANNkdDim = dim,						// copy arguments to static equivs
-		.ANNkdQ = q,
-		.ANNkdPts = pts,
-		.ANNkdMaxErr = ANN_POW(1.0 + eps),
-		.ANNkdPointMK = ANNmin_k(k)		// create set for closest k points
-										// search starting at the root
+		dim,						// ANNkdDim
+		q,							// ANNkdQ
+		ANN_POW(1.0 + eps),			// ANNkdMaxErr
+		pts,						// ANNkdPts
+		ANNmin_k(k)					// ANNkdPointMK, create set for closest k points
+									// search starting at the root
 	};
 
 	ANN_FLOP(2)							// increment floating op count
 
-	root->ann_search(annBoxDistance(q, bnd_box_lo, bnd_box_hi, dim), search_state);
+	root->ann_search(annBoxDistance(q, bnd_box_lo, bnd_box_hi, dim), state);
 
 	for (int i = 0; i < k; i++) {		// extract the k-th closest points
 		dd[i] = state.ANNkdPointMK.ith_smallest_key(i);

@@ -2,6 +2,7 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <Rcpp.h>
+// #include <gperftools/profiler.h>
 
 using namespace Rcpp;
 
@@ -136,9 +137,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// kNN_int
-List kNN_int(NumericMatrix data, int k, int type, int bucketSize, int splitRule, double approx);
-RcppExport SEXP _dbscan_kNN_int(SEXP dataSEXP, SEXP kSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
+// kNN_int_serial
+List kNN_int_serial(NumericMatrix data, int k, int type, int bucketSize, int splitRule, double approx);
+RcppExport SEXP _dbscan_kNN_int_serial(SEXP dataSEXP, SEXP kSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -148,7 +149,25 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type bucketSize(bucketSizeSEXP);
     Rcpp::traits::input_parameter< int >::type splitRule(splitRuleSEXP);
     Rcpp::traits::input_parameter< double >::type approx(approxSEXP);
+    rcpp_result_gen = Rcpp::wrap(kNN_int_serial(data, k, type, bucketSize, splitRule, approx));
+    return rcpp_result_gen;
+END_RCPP
+}
+// kNN_int
+List kNN_int(NumericMatrix data, int k, int type, int bucketSize, int splitRule, double approx);
+RcppExport SEXP _dbscan_kNN_int(SEXP dataSEXP, SEXP kSEXP, SEXP typeSEXP, SEXP bucketSizeSEXP, SEXP splitRuleSEXP, SEXP approxSEXP) {
+BEGIN_RCPP
+    // ProfilerStart("gprofile.kNN_int.log");
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    Rcpp::traits::input_parameter< int >::type bucketSize(bucketSizeSEXP);
+    Rcpp::traits::input_parameter< int >::type splitRule(splitRuleSEXP);
+    Rcpp::traits::input_parameter< double >::type approx(approxSEXP);
     rcpp_result_gen = Rcpp::wrap(kNN_int(data, k, type, bucketSize, splitRule, approx));
+    // ProfilerStop();
     return rcpp_result_gen;
 END_RCPP
 }
@@ -484,6 +503,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_dbscan_dbscan_density_int", (DL_FUNC) &_dbscan_dbscan_density_int, 6},
     {"_dbscan_frNN_int", (DL_FUNC) &_dbscan_frNN_int, 6},
     {"_dbscan_frNN_query_int", (DL_FUNC) &_dbscan_frNN_query_int, 7},
+    {"_dbscan_kNN_int_serial", (DL_FUNC) &_dbscan_kNN_int_serial, 6},
     {"_dbscan_kNN_int", (DL_FUNC) &_dbscan_kNN_int, 6},
     {"_dbscan_kNN_query_int", (DL_FUNC) &_dbscan_kNN_query_int, 7},
     {"_dbscan_lof_kNN", (DL_FUNC) &_dbscan_lof_kNN, 6},
